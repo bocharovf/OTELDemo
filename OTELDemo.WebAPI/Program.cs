@@ -14,7 +14,11 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
             .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
-    .AddAspNetCoreInstrumentation()
+    .AddAspNetCoreInstrumentation((options) => options.Filter =
+        (context) => {
+            var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
+            return !new[] { ".js", ".ico", ".json", ".html" }.Contains(fileExtension);
+        })
     .AddSqlClientInstrumentation();
 });
 
