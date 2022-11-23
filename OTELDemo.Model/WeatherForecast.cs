@@ -1,4 +1,4 @@
-namespace OTELDemo.WebAPI
+namespace OTELDemo.Model
 {
     public class WeatherForecast
     {

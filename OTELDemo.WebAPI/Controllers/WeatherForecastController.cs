@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OTELDemo.Model;
 
 namespace OTELDemo.WebAPI.Controllers
 {
