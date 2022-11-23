@@ -1,0 +1,18 @@
+version: "3"
+
+services:
+  otel-demo:
+    build:
+      context: ./
+      dockerfile: ./OTELDemo/Dockerfile
+    ports:
+      - 80:80
+    environment:
+      - OTELDEMO_WEBAPI_URL=http://otel-demo-webapi
+  otel-demo-webapi:
+    build:
+      context: ./
+      dockerfile: ./OTELDemo.WebAPI/Dockerfile
+    ports:
+      - 8080:80
+
