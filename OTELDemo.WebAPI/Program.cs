@@ -1,3 +1,4 @@
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -9,17 +10,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
-    .AddConsoleExporter()
     .AddSource(serviceName)
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
             .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
     .AddAspNetCoreInstrumentation((options) => options.Filter =
-        (context) => {
+        (context) =>
+        {
             var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
             return !new[] { ".js", ".ico", ".json", ".html" }.Contains(fileExtension);
         })
-    .AddSqlClientInstrumentation();
+    .AddSqlClientInstrumentation()
+    .AddConsoleExporter()
+    .AddOtlpExporter(opt =>
+    {
+        opt.Endpoint = new Uri(OTELDemo.WebAPI.Configuration.OtlpEndpoint);
+        opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+    });
 });
 
 // Add services to the container.

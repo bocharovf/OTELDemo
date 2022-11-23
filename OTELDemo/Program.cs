@@ -1,3 +1,4 @@
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -12,18 +13,23 @@ builder.Services.AddRazorPages();
 builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
-    .AddConsoleExporter()
     .AddSource(serviceName)
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
             .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
     .AddHttpClientInstrumentation()
-    .AddAspNetCoreInstrumentation((options) => options.Filter = 
-        (context) => {
+    .AddAspNetCoreInstrumentation((options) => options.Filter =
+        (context) =>
+        {
             var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
-            return ! new[] { ".js", ".css" }.Contains(fileExtension);
+            return !new[] { ".js", ".css" }.Contains(fileExtension);
         })
-    .AddSqlClientInstrumentation();
+    .AddConsoleExporter()
+    .AddOtlpExporter(opt =>
+    {
+        opt.Endpoint = new Uri(OTELDemo.Configuration.OtlpEndpoint);
+        opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+    });
 });
 
 var app = builder.Build();
