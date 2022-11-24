@@ -1,5 +1,6 @@
 using Npgsql;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OTELDemo.WebAPI.Data;
@@ -31,6 +32,15 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     });
 });
 
+builder.Services.AddOpenTelemetryMetrics(b =>
+{
+    b.SetResourceBuilder(ResourceBuilder.CreateDefault()
+            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+    .AddAspNetCoreInstrumentation()
+    .AddConsoleExporter()
+    .AddPrometheusExporter();
+});
+
 builder.Services.AddDbContext<ApplicationContext>();
 
 // Add services to the container.
@@ -40,6 +50,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Request.Path == "/metrics"
+            && context.Connection.LocalPort == (app.Environment.IsDevelopment() ? 5002 : 80));
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,4 +1,5 @@
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -32,7 +33,18 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     });
 });
 
+builder.Services.AddOpenTelemetryMetrics(b =>
+{
+    b.SetResourceBuilder(ResourceBuilder.CreateDefault()
+            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+    .AddAspNetCoreInstrumentation()
+    .AddConsoleExporter()
+    .AddPrometheusExporter();
+});
+
 var app = builder.Build();
+app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Request.Path == "/metrics"
+            && context.Connection.LocalPort == (app.Environment.IsDevelopment() ? 7217 : 80));
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
