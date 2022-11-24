@@ -1,6 +1,8 @@
+using Npgsql;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OTELDemo.WebAPI.Data;
 
 var serviceName = "OTELDemo.WebAPI";
 var serviceVersion = "1.0.0";
@@ -20,7 +22,7 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
             var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
             return !new[] { ".js", ".ico", ".json", ".html" }.Contains(fileExtension);
         })
-    .AddSqlClientInstrumentation()
+    .AddNpgsql()
     .AddConsoleExporter()
     .AddOtlpExporter(opt =>
     {
@@ -29,13 +31,14 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     });
 });
 
+builder.Services.AddDbContext<ApplicationContext>();
+
 // Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

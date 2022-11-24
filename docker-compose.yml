@@ -16,9 +16,19 @@ services:
       dockerfile: ./OTELDemo.WebAPI/Dockerfile
     environment:
       - OTELDEMO_OTLP_ENPOINT=http://otel-collector:4318/v1/traces
+      - OTELDEMO_POSTGRES_CONSTR=Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=postgres
     ports:
       - 8080:80
-
+  postgres:
+    image: postgres:14.1-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./configs/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
 
   jaeger:
@@ -40,4 +50,8 @@ services:
       - 4318:4318   # http
     depends_on:
       - jaeger
+
+volumes:
+  postgres:
+
 

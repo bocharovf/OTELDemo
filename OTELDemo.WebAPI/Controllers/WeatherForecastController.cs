@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OTELDemo.Model;
+using OTELDemo.WebAPI.Data;
 
 namespace OTELDemo.WebAPI.Controllers
 {
@@ -7,28 +8,19 @@ namespace OTELDemo.WebAPI.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
+        private readonly ApplicationContext _context;
         private readonly ILogger<WeatherForecastController> _logger;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
             _logger = logger;
+            _context = new ApplicationContext();
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+            return _context.WeatherForecasts.ToList();
         }
     }
 }
