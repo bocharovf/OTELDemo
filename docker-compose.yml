@@ -55,6 +55,7 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -71,5 +72,6 @@ services:
 volumes:
   postgres:
   grafana-storage:
+  prometheus_data:
 
 
