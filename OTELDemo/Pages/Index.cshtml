@@ -6,9 +6,11 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Our whether forecast</h1>
+    <h1 class="display-4">Прогноз погоды</h1>
     
     @foreach (WeatherForecast forecast in Model.Forecasts) {
+        <p>Прогноз на @forecast.Date.ToString("dd.MM.yyyy"):</p>
+        <p>Температура в тени: @forecast.TemperatureC градусов</p>
         <p>@forecast.Summary</p>
     }
     
