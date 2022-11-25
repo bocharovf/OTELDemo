@@ -22,8 +22,9 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .AddAspNetCoreInstrumentation((options) => options.Filter =
         (context) =>
         {
+            var isPrometheusRequest = context.Request.Path.ToString().Contains("/metrics");
             var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
-            return !new[] { ".js", ".css" }.Contains(fileExtension);
+            return !new[] { ".js", ".ico", ".css" }.Contains(fileExtension) && !isPrometheusRequest;
         })
     .AddConsoleExporter()
     .AddOtlpExporter(opt =>
