@@ -9,13 +9,13 @@ services:
       - 80:80
     environment:
       - OTELDEMO_WEBAPI_URL=http://otel-demo-webapi
-      - OTELDEMO_OTLP_ENPOINT=http://otel-collector:4318/v1/traces
+      - OTELDEMO_OTLP_ENPOINT=http://otel-collector:4317
   otel-demo-webapi:
     build:
       context: ./
       dockerfile: ./OTELDemo.WebAPI/Dockerfile
     environment:
-      - OTELDEMO_OTLP_ENPOINT=http://otel-collector:4318/v1/traces
+      - OTELDEMO_OTLP_ENPOINT=http://otel-collector:4317
       - OTELDEMO_POSTGRES_CONSTR=Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=postgres
     ports:
       - 8080:80
@@ -38,7 +38,7 @@ services:
       - "14250"
 
   otel-collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:0.66.0
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
       - ./configs/otel-collector-config.yml:/etc/otel-collector-config.yml
@@ -50,6 +50,7 @@ services:
       - 4318:4318   # http
     depends_on:
       - jaeger
+      - loki
 
   prometheus:
     image: prom/prometheus:latest
@@ -62,6 +63,16 @@ services:
     ports:
       - 9090
 
+  loki:
+    image: grafana/loki:2.6.1
+    user: root
+    volumes:
+      - ./configs/loki-local-config.yaml:/etc/loki/local-config.yaml
+      - loki:/data/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -73,5 +84,6 @@ volumes:
   postgres:
   grafana-storage:
   prometheus_data:
+  loki:
 
 

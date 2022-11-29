@@ -9,10 +9,16 @@ exporters:
     endpoint: jaeger:14250
     tls:
       insecure: true
-  logging:
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
 
 processors:
   batch:
+  attributes:
+    actions:
+    - action: insert
+      key: loki.attribute.labels
+      value: ActionName, TraceId, SpanId
 
 extensions:
   health_check:
@@ -22,5 +28,9 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [jaeger, logging]
+      exporters: [jaeger]
       processors: [batch]
+    logs:
+      receivers: [otlp]
+      exporters: [loki]
+      processors: [attributes, batch]

@@ -1,5 +1,6 @@
 using Npgsql;
 using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -25,11 +26,10 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
             return !new[] { ".js", ".ico", ".json", ".html" }.Contains(fileExtension) && !isPrometheusRequest;
         })
     .AddNpgsql()
-    .AddConsoleExporter()
     .AddOtlpExporter(opt =>
     {
         opt.Endpoint = new Uri(OTELDemo.WebAPI.Configuration.OtlpEndpoint);
-        opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+        opt.Protocol = OtlpExportProtocol.Grpc;
     });
 });
 
@@ -38,8 +38,20 @@ builder.Services.AddOpenTelemetryMetrics(b =>
     b.SetResourceBuilder(ResourceBuilder.CreateDefault()
             .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
     .AddAspNetCoreInstrumentation()
-    .AddConsoleExporter()
     .AddPrometheusExporter();
+});
+
+builder.Logging.AddOpenTelemetry(b =>
+{
+    b.SetResourceBuilder(ResourceBuilder.CreateDefault()
+            .AddService(serviceName: serviceName, serviceVersion: serviceVersion));
+    b.IncludeFormattedMessage = true;
+    b.IncludeScopes = true;
+    b.ParseStateValues = true;
+    b.AddOtlpExporter(options => {
+        options.Endpoint = new Uri(OTELDemo.WebAPI.Configuration.OtlpEndpoint);
+        options.Protocol = OtlpExportProtocol.Grpc;
+    });
 });
 
 builder.Services.AddDbContext<ApplicationContext>();

@@ -9,7 +9,7 @@ namespace OTELDemo.Pages
     {
         private readonly ILogger<IndexModel> _logger;
 
-        public IEnumerable<WeatherForecast> Forecasts { get; private set; } = new WeatherForecast[] { };  
+        public IEnumerable<WeatherForecast> Forecasts { get; private set; } = new WeatherForecast[] { };
 
         public IndexModel(ILogger<IndexModel> logger)
         {
@@ -26,6 +26,7 @@ namespace OTELDemo.Pages
             response.EnsureSuccessStatusCode();
             string responseBody = await response.Content.ReadAsStringAsync();
 
+            _logger.LogInformation("Requested weather forecast from API");
             Forecasts = JsonConvert.DeserializeObject<WeatherForecast[]>(responseBody) ?? new WeatherForecast[] { };
         }
     }

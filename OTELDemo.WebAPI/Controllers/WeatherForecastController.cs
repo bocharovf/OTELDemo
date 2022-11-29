@@ -20,6 +20,7 @@ namespace OTELDemo.WebAPI.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
+            _logger.LogInformation("Requested wheather forecast from PostgreSQL");
             return _context.WeatherForecasts.ToList();
         }
     }
