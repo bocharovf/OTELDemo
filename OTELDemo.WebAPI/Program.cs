@@ -18,14 +18,18 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
             .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+    // Инструментируем ASP.NET Core
     .AddAspNetCoreInstrumentation((options) => options.Filter =
         (context) =>
         {
+            // Исключаем трассировку запросов к ресурсам
             var isPrometheusRequest = context.Request.Path.ToString().Contains("/metrics");
             var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
             return !new[] { ".js", ".ico", ".json", ".html" }.Contains(fileExtension) && !isPrometheusRequest;
         })
+    // Инструментируем запросы к Postgres
     .AddNpgsql()
+    // Отправляем данные в OTEL Collector
     .AddOtlpExporter(opt =>
     {
         opt.Endpoint = new Uri(OTELDemo.WebAPI.Configuration.OtlpEndpoint);

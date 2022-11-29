@@ -19,14 +19,17 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
             .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+    // Инструментируем HTTP Client для проброса контекста между сервисами
     .AddHttpClientInstrumentation()
     .AddAspNetCoreInstrumentation((options) => options.Filter =
         (context) =>
         {
+            // Исключаем трассировку запросов к ресурсам
             var isPrometheusRequest = context.Request.Path.ToString().Contains("/metrics");
             var fileExtension = System.IO.Path.GetExtension(context.Request.Path.ToString()).ToLower();
             return !new[] { ".js", ".ico", ".css" }.Contains(fileExtension) && !isPrometheusRequest;
         })
+    // Отправляем данные в OTEL Collector
     .AddOtlpExporter(opt =>
     {
         opt.Endpoint = new Uri(OTELDemo.Configuration.OtlpEndpoint);

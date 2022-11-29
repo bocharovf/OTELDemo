@@ -21,6 +21,8 @@ namespace OTELDemo.Pages
             var apiUri = new Uri(Configuration.WebApiUrl);
             var forecastUrl = new Uri(apiUri, "WeatherForecast");
 
+            // Наш http client уже инструментирован OpenTelemetry в Program.cs
+            // все запросы буду содержать дополнительный заголовок с контекстом трассировки
             var client = new HttpClient();
             HttpResponseMessage response = await client.GetAsync(forecastUrl);
             response.EnsureSuccessStatusCode();

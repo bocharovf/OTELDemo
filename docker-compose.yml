@@ -1,6 +1,8 @@
 version: "3"
 
 services:
+
+  # Демонстрационное приложение:
   otel-demo:
     build:
       context: ./
@@ -31,6 +33,7 @@ services:
       - ./configs/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
 
+  # Стек наблюдаемости:
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
