@@ -8,7 +8,6 @@ namespace OTELDemo.WebAPI.Data
         public DbSet<WeatherForecast> WeatherForecasts { get; set; }
         public ApplicationContext()
         {
-            Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

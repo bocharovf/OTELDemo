@@ -3,9 +3,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
-var serviceName = "OTELDemo.Front";
-var serviceVersion = "1.0.0";
+using OTELDemo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +13,10 @@ builder.Services.AddRazorPages();
 builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
-    .AddSource(serviceName)
+    .AddSource(Configuration.ServiceName)
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddService(Configuration.ServiceName, Configuration.ServiceVersion))
     // Инструментируем HTTP Client для проброса контекста между сервисами
     .AddHttpClientInstrumentation()
     .AddAspNetCoreInstrumentation((options) => options.Filter =
@@ -40,7 +38,7 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 builder.Services.AddOpenTelemetryMetrics(b =>
 {
     b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddService(Configuration.ServiceName, Configuration.ServiceVersion))
     .AddAspNetCoreInstrumentation()
     .AddPrometheusExporter();
 });
@@ -48,7 +46,7 @@ builder.Services.AddOpenTelemetryMetrics(b =>
 builder.Logging.AddOpenTelemetry(b =>
 {
     b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion));
+            .AddService(Configuration.ServiceName, Configuration.ServiceVersion));
     b.IncludeFormattedMessage = true;
     b.IncludeScopes = true;
     b.ParseStateValues = true;

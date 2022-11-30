@@ -4,20 +4,22 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OTELDemo.WebAPI;
 using OTELDemo.WebAPI.Data;
-
-var serviceName = "OTELDemo.WebAPI";
-var serviceVersion = "1.0.0";
+using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var meter = new Meter(Configuration.ServiceName);
+meter.CreateObservableGauge("ThreadCount", () => new[] { new Measurement<int>(ThreadPool.ThreadCount) });
 
 builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 {
     tracerProviderBuilder
-    .AddSource(serviceName)
+    .AddSource(Configuration.ServiceName)
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddService(Configuration.ServiceName, Configuration.ServiceVersion))
     // Инструментируем ASP.NET Core
     .AddAspNetCoreInstrumentation((options) => options.Filter =
         (context) =>
@@ -40,7 +42,8 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 builder.Services.AddOpenTelemetryMetrics(b =>
 {
     b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddService(Configuration.ServiceName, Configuration.ServiceVersion))
+    .AddMeter(Configuration.ServiceName)
     .AddAspNetCoreInstrumentation()
     .AddPrometheusExporter();
 });
@@ -48,7 +51,7 @@ builder.Services.AddOpenTelemetryMetrics(b =>
 builder.Logging.AddOpenTelemetry(b =>
 {
     b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion));
+            .AddService(Configuration.ServiceName, Configuration.ServiceVersion));
     b.IncludeFormattedMessage = true;
     b.IncludeScopes = true;
     b.ParseStateValues = true;
@@ -60,10 +63,7 @@ builder.Logging.AddOpenTelemetry(b =>
 
 builder.Services.AddDbContext<ApplicationContext>();
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
